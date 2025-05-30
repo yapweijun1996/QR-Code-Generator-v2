@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QR Code Generator</title>
+  <meta name="description" content="Professional-grade, fully customizable QR Code Generator">
+  <!-- Google Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+  <!-- QR Code Styling library -->
+  <script defer src="https://unpkg.com/qr-code-styling@1.5.0/lib/qr-code-styling.js"></script>
+  <!-- jsPDF for PDF export -->
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <!-- Main Styles -->
+  <link rel="stylesheet" href="qr-generator.css">
+  <link rel="icon" type="image/png" sizes="128x128" href="https://www.yapweijun1996.com/assets/img/favicon-128x128.png">
+</head>
+<body data-theme="dark">
+  <!-- Header -->
+  <header>
+    <h1 id="main-title">QR Code Generator</h1>
+    <button id="theme-toggle" aria-label="Toggle theme">🌙</button>
+  </header>
+  <!-- Main Application Layout -->
+  <main class="app">
+    <!-- Controls Panel -->
+    <section class="controls">
+      <form id="qr-form">
+        <div class="basic-options">
+          <label for="qr-text" id="label-qr-text">Enter URL or Text</label>
+          <input type="text" id="qr-text" placeholder="Enter URL or text here..." required>
+          <button type="submit" id="generate-btn" disabled>Generate QR</button>
+        </div>
+        <details id="advanced-options">
+          <summary id="summary-advanced">Advanced Options</summary>
+          <fieldset>
+            <legend id="legend-visual">Visual Customization</legend>
+            <label for="module-shape">Module Shape
+              <span class="info-icon" data-tooltip="Select shape for QR code modules"></span>
+              <select id="module-shape">
+                <option value="square">Square</option>
+                <option value="dots">Dot</option>
+                <option value="rounded">Rounded</option>
+                <option value="extra-rounded">Liquid</option>
+              </select>
+            </label>
+            <label for="eye-shape">Eye Shape
+              <span class="info-icon" data-tooltip="Select shape for QR code finder patterns (eyes)"></span>
+              <select id="eye-shape">
+                <option value="square">Default</option>
+                <option value="dot">Circular</option>
+                <option value="rounded">Rounded</option>
+                <option value="extra-rounded">Bordered</option>
+              </select>
+            </label>
+            <label for="fill-type">Fill Type
+              <span class="info-icon" data-tooltip="Choose solid color or gradient fill for QR modules"></span>
+              <select id="fill-type">
+                <option value="solid">Solid</option>
+                <option value="gradient">Gradient</option>
+              </select>
+            </label>
+            <div id="gradient-controls" hidden>
+              <label for="gradient-type">Gradient Type
+                <span class="info-icon" data-tooltip="Select gradient shape"></span>
+                <select id="gradient-type">
+                  <option value="linear">Linear</option>
+                  <option value="radial">Radial</option>
+                </select>
+              </label>
+              <label for="gradient-rotation">Rotation: <span id="gradient-rotation-value">0</span>°
+                <input type="range" id="gradient-rotation" min="0" max="360" value="0">
+              </label>
+              <label for="gradient-stop-color-0">Color Stop 1
+                <input type="color" id="gradient-stop-color-0" value="#000000">
+              </label>
+              <label for="gradient-stop-offset-0">Offset
+                <input type="number" id="gradient-stop-offset-0" min="0" max="100" value="0">%
+              </label>
+              <label for="gradient-stop-color-1">Color Stop 2
+                <input type="color" id="gradient-stop-color-1" value="#ffffff">
+              </label>
+              <label for="gradient-stop-offset-1">Offset
+                <input type="number" id="gradient-stop-offset-1" min="0" max="100" value="100">%
+              </label>
+            </div>
+            <label for="qr-size">Size: <span id="qr-size-value">200</span>px
+              <span class="info-icon" data-tooltip="Adjust QR code dimension between 150px and 1000px"></span>
+              <input type="range" id="qr-size" min="150" max="1000" step="50" value="200">
+            </label>
+            <label for="color-dark">Foreground Color
+              <span class="info-icon" data-tooltip="Select the color of QR code modules/dots"></span>
+              <input type="color" id="color-dark" value="#000000">
+            </label>
+            <label for="color-light">Background Color
+              <span class="info-icon" data-tooltip="Select the background color of the QR code"></span>
+              <input type="color" id="color-light" value="#ffffff">
+            </label>
+          </fieldset>
+          <fieldset>
+            <legend id="legend-behavior">Behavior Control</legend>
+            <label id="label-live-preview"><input type="checkbox" id="live-preview" checked> Live Preview
+              <span class="info-icon" data-tooltip="Enable automatic live updates as you change settings"></span>
+            </label>
+            <label for="interface-language" id="label-language">Interface Language
+              <span class="info-icon" data-tooltip="Switch UI language between English and 中文"></span>
+              <select id="interface-language">
+                <option value="en">English</option>
+                <option value="zh">中文</option>
+              </select>
+            </label>
+          </fieldset>
+          <fieldset>
+            <legend id="legend-embedded">Embedded Content</legend>
+            <label for="logo-upload">Upload Logo
+              <span class="info-icon" data-tooltip="Upload a logo (PNG/JPEG/SVG ≤1MB) to embed at the center"></span>
+              <input type="file" id="logo-upload" accept=".png,.jpg,.jpeg,.svg">
+            </label>
+            <div class="helper-text">Max 1MB. Transparent PNG recommended.</div>
+            <label for="logo-scale">Logo Size: <span id="logo-scale-value">20</span>%
+              <span class="info-icon" data-tooltip="Adjust logo size ratio relative to the QR code"></span>
+              <input type="range" id="logo-scale" min="10" max="50" step="5" value="20">
+            </label>
+          </fieldset>
+          <fieldset>
+            <legend id="legend-title">Title Settings</legend>
+            <label for="title-text">Title Text
+              <span class="info-icon" data-tooltip="Add optional text above or below the QR code"></span>
+              <input type="text" id="title-text" placeholder="Optional title">
+            </label>
+            <label for="title-position">Position
+              <span class="info-icon" data-tooltip="Choose title placement position"></span>
+              <select id="title-position">
+                <option value="above">Above QR</option>
+                <option value="below">Below QR</option>
+              </select>
+            </label>
+            <label for="title-font">Font
+              <span class="info-icon" data-tooltip="Select font family for the title"></span>
+              <select id="title-font">
+                <option value="Montserrat">Montserrat</option>
+                <option value="Arial">Arial</option>
+                <option value="sans-serif">Sans-serif</option>
+              </select>
+            </label>
+            <label for="title-size">Size: <span id="title-size-value">16</span>px
+              <span class="info-icon" data-tooltip="Adjust title font size"></span>
+              <input type="range" id="title-size" min="10" max="36" step="2" value="16">
+            </label>
+            <label for="title-color">Color
+              <span class="info-icon" data-tooltip="Select the color of the title text"></span>
+              <input type="color" id="title-color" value="#000000">
+            </label>
+          </fieldset>
+          <fieldset>
+            <legend id="legend-export">Export Settings</legend>
+            <label for="export-format">Format
+              <span class="info-icon" data-tooltip="Select output format: PNG for raster image, SVG for vector, or PDF for document export"></span>
+              <select id="export-format">
+                <option value="png">PNG</option>
+                <option value="svg">SVG</option>
+                <option value="pdf">PDF</option>
+              </select>
+            </label>
+            <label for="resolution">Resolution
+              <span class="info-icon" data-tooltip="Choose resolution multiplier (scales pixel density for PNG and PDF)"></span>
+              <select id="resolution">
+                <option value="1">1×</option>
+                <option value="2">2×</option>
+                <option value="4">4×</option>
+              </select>
+            </label>
+            <label><input type="checkbox" id="transparent-bg"> Transparent Background
+              <span class="info-icon" data-tooltip="Toggle transparent background for PNG and SVG exports"></span>
+            </label>
+            <label for="file-name">File Name
+              <span class="info-icon" data-tooltip="Custom filename; if empty, auto-derived from content"></span>
+              <input type="text" id="file-name" placeholder="Auto from content">
+            </label>
+          </fieldset>
+          <fieldset>
+            <legend id="legend-encoding">Encoding Options</legend>
+            <label for="error-level">Error Correction
+              <span class="info-icon" data-tooltip="Choose L/M/Q/H: higher tolerance adds more redundancy to recover damaged codes at the expense of capacity."></span>
+              <select id="error-level">
+                <option value="L">L (7%)</option>
+                <option value="M">M (15%)</option>
+                <option value="Q">Q (25%)</option>
+                <option value="H">H (30%)</option>
+              </select>
+            </label>
+            <label><input type="checkbox" id="auto-detect"> Auto-detect format
+              <span class="info-icon" data-tooltip="Automatically prefix mailto: or tel: for email and phone inputs"></span>
+            </label>
+            <label><input type="checkbox" id="base64-encode"> Base64 Encode Data
+              <span class="info-icon" data-tooltip="Encode content in Base64 before generating the QR code"></span>
+            </label>
+          </fieldset>
+        </details>
+      </form>
+    </section>
+    <!-- Preview Panel -->
+    <section class="preview">
+      <div class="preview-inner">
+        <div id="qr-preview"></div>
+        <div class="download-section">
+          <button id="download-btn" disabled>Download PNG</button>
+        </div>
+      </div>
+    </section>
+    <!-- Mobile action bar -->
+    <div class="action-bar">
+      <button id="generate-btn-mobile" disabled>Generate QR</button>
+      <button id="download-btn-mobile" disabled>Download</button>
+    </div>
+  </main>
+  <!-- Footer -->
+  <footer>&copy; 2025 Your Company</footer>
+  <!-- Toast container -->
+  <div id="toast-container"></div>
+  <!-- Main Script -->
+  <script defer src="qr-generator.js"></script>
+</body>
+</html> 
