@@ -60,14 +60,5 @@ This project is a static site and does not require a backend.
 
 1.  **Clone the repository:**
     ```bash
-    git clone https://github.com/YOUR_USERNAME/QR-Code-Generator-v2.git
+    git clone https://github.com/yapweijun1996/QR-Code-Generator-v2.git
     ```
-2.  **Navigate to the project directory:**
-    ```bash
-    cd QR-Code-Generator-v2
-    ```
-3.  **Open `index.html`:** Simply open the `index.html` file in your web browser.
-
-## License
-
-[Specify your license here, e.g., MIT License] 
